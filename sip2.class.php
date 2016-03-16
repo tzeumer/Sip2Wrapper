@@ -82,7 +82,7 @@
  * $msg = $mysip->msgSCStatus();
  *
  * // execute a self check
- * $check = $mysip->parseACStatusResponse( $mysip->get_message($msg) );
+ * $check = $mysip->parseACSStatusResponse( $mysip->get_message($msg) );
  *
  * // verify return
  * if ($status['fixed']['Online'] != 'Y') {
