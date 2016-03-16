@@ -408,26 +408,44 @@ class sip2
 
     /**
      * Generate Patron Information (code 63) request messages in sip2 format
+     *
+     * 2016-03-16:  Gossip support for fee positions. This is a new 7th Y
+     *              position (while the manual states "6th", yet it works).     *
+     * It returns these additional fields:
+     * FIELD    USED IN (Responses) Description
+     * FA       64, 38              Ammount of for fee position (alway dot as decimal seperator)
+     * FB       64, 38              ItemId of media for fee position
+     * FC       64, 38              Date when fee was generated (alway "dd.MM.yyyy")
+     * FD       64, 38              Description/title of fee position
+     * FE       64, 38              Cost type of fee position
+     * FF       64, 38              Description of cost type of fee position
+     * FG       38                  Paid ammount for fee position
+     *
+     * Note: Sadly no official documentation for Gossip is available online. You
+     * can only contact the developrt (J. Hofmann) via
+     * https://www.gbv.de/Verbundzentrale/serviceangebote/gossip-service-der-vzg
+     *
      * @param  string $type  type of information request (none, hold, overdue, charged, fine, recall, unavail)
      * @param  string $start value for BP field (default 1)
      * @param  string $end   value for BQ field (default 5)
      * @return string        SIP2 request message
      * @api
      */
-    function msgPatronInformation($type, $start = '1', $end = '5')
+    function msgPatronInformation($type, $start = '1', $end = '6')
     {
         /*
         * According to the specification:
-        * Only one category of items should be  requested at a time, i.e. it would take 6 of these messages,
+        * Only one category of items should be  requested at a time, i.e. it would take 8 of these messages,
         * each with a different position set to Y, to get all the detailed information about a patron's items.
         */
-        $summary['none']     = '      ';
-        $summary['hold']     = 'Y     ';
-        $summary['overdue']  = ' Y    ';
-        $summary['charged']  = '  Y   ';
-        $summary['fine']     = '   Y  ';
-        $summary['recall']   = '    Y ';
-        $summary['unavail']  = '     Y';
+        $summary['none']     = '       ';
+        $summary['hold']     = 'Y      ';
+        $summary['overdue']  = ' Y     ';
+        $summary['charged']  = '  Y    ';
+        $summary['fine']     = '   Y   ';
+        $summary['recall']   = '    Y  ';
+        $summary['unavail']  = '     Y ';
+        $summary['feeItems'] = '      Y';
 
         /* Request patron information */
         $this->_newMessage('63');
