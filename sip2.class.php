@@ -986,7 +986,11 @@ class sip2
         $terminator = '';
         $nr         = '';
 
-        $this->_debugmsg('SIP2: Sending SIP2 request...');
+        // Set timeout for socket, especially if there is no response with
+        // socket_recv due to malformed query.
+        socket_set_option($this->socket,SOL_SOCKET,SO_RCVTIMEO,array("sec"=>5, "usec"=>0));
+
+        $this->_debugmsg('SIP2: Sending SIP2 request: '.$message);
         socket_write($this->socket, $message, strlen($message));
 
         $this->_debugmsg('SIP2: Request Sent, Reading response');
