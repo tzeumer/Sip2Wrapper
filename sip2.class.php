@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * @package
@@ -431,7 +431,7 @@ class sip2
      * @return string        SIP2 request message
      * @api
      */
-    function msgPatronInformation($type, $start = '1', $end = '6')
+    function msgPatronInformation($type, $start = '1', $end = '5')
     {
         /*
         * According to the specification:
