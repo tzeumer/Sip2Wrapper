@@ -233,6 +233,12 @@ class Sip2
     private $noFixed = false;
 
     /**
+     * Used protocol version (or extension)
+     * @var string
+     */
+    protected $version = 'Sip2';
+
+    /**
      * Generate Patron Status (code 23) request messages in sip2 format
      * @return string SIP2 request message
      * @api
@@ -364,7 +370,7 @@ class Sip2
         }
 
         if ($status < 0 || $status > 2) {
-            $this->_debugmsg( "SIP2: Invalid status passed to msgSCStatus" );
+            $this->_debugmsg( $this->version.": Invalid status passed to msgSCStatus" );
             return false;
         }
 
@@ -492,13 +498,13 @@ class Sip2
 
         if (!is_numeric($feeType) || $feeType > 99 || $feeType < 1) {
             /* not a valid fee type - exit */
-            $this->_debugmsg( "SIP2: (msgFeePaid) Invalid fee type: {$feeType}");
+            $this->_debugmsg( $this->version.": (msgFeePaid) Invalid fee type: {$feeType}");
             return false;
         }
 
         if (!is_numeric($pmtType) || $pmtType > 99 || $pmtType < 0) {
             /* not a valid payment type - exit */
-            $this->_debugmsg( "SIP2: (msgFeePaid) Invalid payment type: {$pmtType}");
+            $this->_debugmsg( $this->version.": (msgFeePaid) Invalid payment type: {$pmtType}");
             return false;
         }
 
@@ -594,7 +600,7 @@ class Sip2
          */
         if (strpos('-+*',$mode) === false) {
             /* not a valid mode - exit */
-            $this->_debugmsg( "SIP2: Invalid hold mode: {$mode}");
+            $this->_debugmsg( $this->version.": Invalid hold mode: {$mode}");
             return false;
         }
 
@@ -606,7 +612,7 @@ class Sip2
          * 3   specific copy
          * 4   any copy at a single branch or location
          */
-            $this->_debugmsg( "SIP2: Invalid hold type code: {$holdtype}");
+            $this->_debugmsg( $this->version.": Invalid hold type code: {$holdtype}");
             return false;
         }
 
@@ -986,34 +992,34 @@ class Sip2
         $terminator = '';
         $nr         = '';
 
-        $this->_debugmsg('SIP2: Sending SIP2 request...');
         socket_write($this->socket, $message, strlen($message));
+        $this->_debugmsg($this->version.": --- SENDING REQUEST --- '$message'");
 
-        $this->_debugmsg('SIP2: Request Sent, Reading response');
+        $this->_debugmsg($this->version.": --- REQUEST SENT, WAITING FOR RESPONSE --- \n");
 
         while ($terminator != "\x0D" && $nr !== FALSE) {
             $nr = socket_recv($this->socket,$terminator,1,0);
             $result = $result . $terminator;
         }
 
-        $this->_debugmsg("SIP2: {$result}");
+        $this->_debugmsg($this->version.": --- RECEIVED RESPONSE --- '{$result}\n");
 
         /* test message for CRC validity */
         if ($this->_check_crc($result)) {
             /* reset the retry counter on successful send */
             $this->retry=0;
-            $this->_debugmsg("SIP2: Message from ACS passed CRC check");
+            $this->_debugmsg($this->version.": --- Message from ACS passed CRC check ---\n");
         } else {
             /* CRC check failed, request a resend */
             $this->retry++;
             if ($this->retry < $this->maxretry) {
                 /* try again */
-                $this->_debugmsg("SIP2: Message failed CRC check, retrying ({$this->retry})");
-                
+                $this->_debugmsg($this->version.": --- Message failed CRC check, retrying --- ({$this->retry})\n");
+
                 $this->get_message($message);
             } else {
                 /* give up */
-                $this->_debugmsg("SIP2: Failed to get valid CRC after {$this->maxretry} retries.");
+                $this->_debugmsg($this->version.": --- Failed to get valid CRC --- after {$this->maxretry} retries.\n");
                 return false;
             }
         }
@@ -1028,7 +1034,7 @@ class Sip2
     function connect()
     {
         /* Socket Communications  */
-        $this->_debugmsg( "SIP2: --- BEGIN SIP communication ---");  
+        $this->_debugmsg( $this->version.": --- BEGIN SIP communication ---\n");
 
         /* Get the IP address for the target host. */
         $address = gethostbyname($this->hostname);
