@@ -19,6 +19,9 @@
  *
  * Changelog:
  *
+ * 2016-03-19
+ * - Added support for TLS connections
+ *
  * 2012.02.05:
  *
  * - Fixed some underlying issues in the handling of CRC checking and Sequence number usage

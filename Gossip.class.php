@@ -25,8 +25,8 @@
  *                           // msgPatronInformation(feeItems) - FA
  *  $feeId      = '1059648'; // this is what you get doing a
  *                           // msgPatronInformation(feeItems) - FB
- *  $msg = $test->msgFeePaid('01', '00', $ammount, 'EUR', $feeId, $transid);
- *  print_r($test->parseFeePaidResponse( $test->get_message($msg) ));
+ *  $msg = $gossip->msgFeePaid('01', '00', $ammount, 'EUR', $feeId, $transid);
+ *  print_r($gossip->parseFeePaidResponse( $gossip->get_message($msg) ));
  *
  * Fee positions can be fetched using a Y a position 7 in a Patron Information
  * request (code 63)
