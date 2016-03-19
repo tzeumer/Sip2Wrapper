@@ -4,9 +4,6 @@
  * @author nathan@nathanjohnson.info
  */
 
-/* pull in base class */
-require_once 'Sip2.class.php';
-
 /**
  * Sip2Wrapper
  * 
@@ -35,6 +32,34 @@ require_once 'Sip2.class.php';
  *     if ($sip2->startPatronSession($patron, $patronpwd)) {
  *       var_dump($sip2->patronScreenMessages);
  *     }
+ *
+ *
+ * Example creating object with TLS and Gossip (everything else is the same
+ * as above):
+ *  $sip2 = new Sip2Wrapper(
+ *      array(
+ *          'hostname' => 'mySipServer.somwhere.net',
+ *          'port' => 1290,
+ *          'withCrc' => true,
+ *          'location' => 'Reading Room 1',
+ *          'institutionId' => 'My Library',
+ *          'language' => '001',
+ *
+ *          'socket_tls_enable' => true,
+ *          'socket_tls_options' => array(
+ *              'peer_name'                 => 'mySipServer.somwhere.net',
+ *              'verify_peer'               => true,
+ *              'verify_peer_name'          => true,
+ *              'allow_self_signed'         => true,
+ *              'ciphers'                   => 'HIGH:!SSLv2:!SSLv3',
+ *              'capture_peer_cert'         => true,
+ *              'capture_peer_cert_chain'   => true,
+ *              'disable_compression'       => true
+ *          ),
+ *
+ *          'debug' => true
+ *      ), true, 'Gossip'
+ *  );
  *```
  */
 
@@ -277,10 +302,13 @@ class Sip2Wrapper {
      * @param $sip2Params array of key value pairs that will set the corresponding member variables
      * in the underlying sip2 class
      * @param boolean $autoConnect whether or not to automatically connect to the server.  defaults
+     * @param string $version   Currently either Sip2 (default) or Gossip
      * to true
      */
-    public function __construct($sip2Params = array(), $autoConnect = true) {
-        $sip2 = new Sip2;
+    public function __construct($sip2Params = array(), $autoConnect = true, $version = 'Sip2') {
+        require_once ($version.'.class.php');
+
+        $sip2 = new $version;
         foreach ($sip2Params as $key => $val) {
             switch($key) {
                 case 'institutionId':
