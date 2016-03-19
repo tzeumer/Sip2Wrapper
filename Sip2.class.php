@@ -203,6 +203,44 @@ class Sip2
     public $AN = 'SIPCHK';
 
     /**
+     * Socket: value until connection times out (no server response)
+     * @var integer
+     */
+    public $socket_timeout = 10;
+
+    /**
+     * Socket: enable TLS (encrypted connection). Server has to support it.
+     * @var integer
+     */
+    public $socket_tls_enable = false;
+
+    /**
+     * Socket: Set TLS options. Using most likely SIP-Server settings for example.
+     * Please refer to https://secure.php.net/manual/en/context.ssl.php
+     * @var array
+     */
+    public $socket_tls_options = array(
+        //'peer_name'                 => 'YOUR TLS HOSTNAME',                           // since 5.6, If this value is not set, then the name is guessed based on the hostname used when opening the stream
+        'verify_peer'               => true,
+        'verify_peer_name'          => true,                                            // since 5.6
+        'allow_self_signed'         => true,
+        //'cafile'                  => 'path/to/cafile/cacert.pem',
+        //'capath'                  => 'path/to/ca_certificates/directory',
+        //'local_cert'              => 'path/to/local_cert/cert_and_privateKey.pem',
+        //'local_pk'                => 'path/to/local_certs_and_keys/',
+        //'passphrase'              => 'My local_cert password',
+        //'CN_match'                => $this->hostname,                                 // until 5.6: use peer_name instead
+        //'verify_depth'            => Defaults to no verification,
+        'ciphers'                   => 'HIGH:!SSLv2:!SSLv3',
+        'capture_peer_cert'         => true,
+        'capture_peer_cert_chain'   => true,
+        //'SNI_enabled'             => true,                                            // since 5.3.2
+        //'SNI_server_name'         => 'NAME',                                          // until 5.6: use peer_name instead
+        'disable_compression'       => true,                                            // since 5.4.13
+        //'peer_fingerprint'          => 'SOME_HASH_STRING or an ARRAY'                 // since 5.6
+    );
+
+    /**
      * raw socket connection
      * @var object
      */
@@ -984,6 +1022,7 @@ class Sip2
      * @param  string $message The message text to send to the backend system (request)
      * @return string|false    Raw string response returned from the backend system (response)
      * @api
+     * @todo    Maybe use stream_select() instead of stream_set_timeout()?
      */
     function get_message ($message)
     {
@@ -992,15 +1031,19 @@ class Sip2
         $terminator = '';
         $nr         = '';
 
-        socket_write($this->socket, $message, strlen($message));
         $this->_debugmsg($this->version.": --- SENDING REQUEST --- '$message'");
+        fwrite($this->socket, $message, strlen($message));
 
+        // Set timeout for socket, especially if there is no response with
+        // socket_recv due to malformed query. Since sending shoudl never be
+        // a problem after a sucessful connection, only receeiving might time
+        // out.
+        stream_set_timeout($this->socket, $this->socket_timeout);
         $this->_debugmsg($this->version.": --- REQUEST SENT, WAITING FOR RESPONSE --- \n");
 
-        while ($terminator != "\x0D" && $nr !== FALSE) {
-            $nr = socket_recv($this->socket,$terminator,1,0);
-            $result = $result . $terminator;
-        }
+        // \x0A is the escaped hexadecimal Line Feed. The equivalent of \n.
+        // \x0D is the escaped hexadecimal Carriage Return. The equivalent of \r.
+        $result = stream_get_line($this->socket, 100000, "\x0D");
 
         $this->_debugmsg($this->version.": --- RECEIVED RESPONSE --- '{$result}\n");
 
@@ -1027,7 +1070,7 @@ class Sip2
     }
 
     /**
-     * Open a socket connection to a backend SIP2 system
+     * Open a socket connection to a backend SIP2 system, enable TLS via property
      * @return bool The socket connection status
      * @api
      */
@@ -1036,30 +1079,26 @@ class Sip2
         /* Socket Communications  */
         $this->_debugmsg( $this->version.": --- BEGIN SIP communication ---\n");
 
-        /* Get the IP address for the target host. */
-        $address = gethostbyname($this->hostname);
+        // Set TLS options if encryption is enabled
+        if ($this->socket_tls_enable == true) {
+            $protocol = 'tls';
+            $context  = stream_context_create( ['ssl' => $this->socket_tls_options] );
+        } else {
+            $protocol = 'tcp';
+            $context  = stream_context_create();
+        }
 
-        /* Create a TCP/IP socket. */
-        $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        // Connect (with persistent connection (seems to work, yet not exactly sure)
+        $this->socket = stream_socket_client($protocol.'://'.$this->hostname.':'.$this->port, $errno, $errstr, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context);
 
-        /* check for actual truly false result using ===*/
+        /* check for actual truly false result using === and return socket status*/
         if ($this->socket === false) {
-            $this->_debugmsg( "SIP2: socket_create() failed: reason: " . socket_strerror($this->socket));
+            $result = $this->_debugmsg( $this->version." with TLS {$this->socket_tls_enable}: stream_socket_client() failed: reason: ($errno) $errstr \n");
             return false;
         } else {
-            $this->_debugmsg( "SIP2: Socket Created" ); 
+            $this->_debugmsg( $this->version.": --- SOCKET READY (with TLS {$this->socket_tls_enable}) --- (Socket created and connected)\n" );
+            return true;
         }
-        $this->_debugmsg( "SIP2: Attempting to connect to '$address' on port '{$this->port}'...");
-
-        /* open a connection to the host */
-        $result = socket_connect($this->socket, $address, $this->port);
-        if (!$result) {
-            $this->_debugmsg("SIP2: socket_connect() failed.\nReason: ($result) " . socket_strerror($result));
-        } else {
-            $this->_debugmsg( "SIP2: --- SOCKET READY ---" );
-        }
-        /* return the result from the socket connect */
-        return $result;
     }
 
     /**
@@ -1069,7 +1108,7 @@ class Sip2
     function disconnect ()
     {
         /*  Close the socket */
-        socket_close($this->socket);
+        fclose($this->socket);
     }
 
 
