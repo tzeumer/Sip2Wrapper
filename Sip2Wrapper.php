@@ -5,7 +5,7 @@
  */
 
 /* pull in base class */
-require_once 'sip2.class.php';
+require_once 'Sip2.class.php';
 
 /**
  * Sip2Wrapper
@@ -280,7 +280,7 @@ class Sip2Wrapper {
      * to true
      */
     public function __construct($sip2Params = array(), $autoConnect = true) {
-        $sip2 = new sip2;
+        $sip2 = new Sip2;
         foreach ($sip2Params as $key => $val) {
             switch($key) {
                 case 'institutionId':
