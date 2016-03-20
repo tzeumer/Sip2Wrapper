@@ -1,0 +1,24 @@
+{
+    "name": "tzeumer/Sip2Wrapper",
+    "description": "Client for SIP2 (Standard Interchange Protocol) communication as used with SelfCheck systems or library automation system dealing with patrons or library materials. Class supports TLS and comes with Gossip extension.",
+    "keywords": ["SIP2", "Standard Interchange Protocol", "library automation", "Gossip"],
+    "homepage": "https://github.com/tzeumer/Sip2Wrapper",
+    "type": "library",
+    "license": "GPL3",
+    "authors": [
+        {
+            "name": "John Wohlers",
+            "email": "john@wohlershome.net"
+        },
+        {
+            "name": "Tobias Zeumer",
+            "email": "github@verweisungsform.de"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/tzeumer/Sip2Wrapper/issues"
+    },
+    "require": {
+        "php": "^5.4.13 || ^7.0"
+    }
+}
