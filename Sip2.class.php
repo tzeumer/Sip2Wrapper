@@ -234,7 +234,7 @@ class Sip2
         //'passphrase'              => 'My local_cert password',
         //'CN_match'                => $this->hostname,                                 // until 5.6: use peer_name instead
         //'verify_depth'            => Defaults to no verification,
-        'ciphers'                   => 'HIGH:!SSLv2:!SSLv3',
+        'ciphers'                   => 'HIGH:!SSLv2',
         'capture_peer_cert'         => true,
         'capture_peer_cert_chain'   => true,
         //'SNI_enabled'             => true,                                            // since 5.3.2

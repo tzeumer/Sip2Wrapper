@@ -122,8 +122,8 @@ $gossip = new Sip2Wrapper(
 ### 3.2 About Gossip
 Gossip is short for "Good Old Server for Standard Interchange Protocol". Gossip is an SIP2 server implementation (Java) with an extension for enhanced payment options. It's possible to pay
 * a single outstanding position; "subtotal-payment"
-* an amount being below so total fees (but that sums up to complete positions being paid); "subtotal-payment"
-* an amount being below so total fees (but that might only pays one or more positions partially); "subtotal-payment + partial-fee-payment"
+* an amount being below the total fees (but that sums up to complete positions being paid); "subtotal-payment"
+* an amount being below the total fees (but that might only pay one or more positions partially); "subtotal-payment + partial-fee-payment"
 
 SIP2 already provides everything for the payment part with positions. Example
 ```
@@ -134,7 +134,7 @@ $msg = $gossip->msgFeePaid('01', '00', $ammount, 'EUR', $feeId, $transid);
 print_r($gossip->parseFeePaidResponse( $gossip->get_message($msg) ));
 ```
 
-Fee positions can be fetched using a Y a position 7 in a Patron Information request (code 63). It returns these additional fields:
+Fee positions can be fetched using a Y a position 7 (counting from 0 as in the standard it really is the 6th) in a Patron Information request (code 63). It returns these additional fields:
 ```
 FIELD    USED IN (Responses) Description
 FA       64, 38              Ammount of for fee position (alway dot as decimal seperator)
