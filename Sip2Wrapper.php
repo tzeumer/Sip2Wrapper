@@ -9,6 +9,21 @@
  * 
  * This is a wrapper class for the sip2.class.php from google code
  *
+ * 2016-04:
+ * Added these methods
+ * - getPatronFeeItems()
+ * - itemGetInformation()
+ * - itemCheckout()
+ * - itemCheckin()
+ * - itemRenewAll()
+ * - itemRenew()
+ * - itemStatusUpdate()
+ * - feePay()
+ * Added for completness but pretty useles
+ * - patronBlock()
+ * - patronEnable()
+ * - hold()
+ *
  * Usage:
  *```php
  *     // require the class
@@ -431,6 +446,159 @@ class Sip2Wrapper {
         $this->_patronInfo = NULL;
         return $this;
     }
+
+    /**
+     * 2016-04: method to get Item Information (17/18)
+     * @return Sip2Wrapper returns $this
+     */
+    public function itemGetInformation($itemID) {
+        $msg = $this->_sip2->msgItemInformation($itemID);
+        $info = $this->_sip2->parseItemInfoResponse($this->_sip2->get_message($msg));
+        return $info;
+    }
+
+
+    /**
+     * 2016-04: Checkout item (changed order of parameters slightly)
+     * @param  string $item      value for the variable length required AB field
+     * @param  string $nbDateDue optional override for default due date (default '')
+     * @param  string $scRenewal value for the renewal portion of the fixed length field (default N)
+     * @param  string $itmProp   value for the variable length optional CH field (default '')
+     * @param  string $fee       value for the variable length optional BO field (default N)
+     * @param  string $noBlock   value for the blocking portion of the fixed length field (default N)
+     * @param  string $cancel    value for the variable length optional BI field (default N)
+     * @return array             SIP2 checkout response
+     */
+    public function itemCheckout($itemID, $itmProp ='', $fee='N', $noBlock='N', $nbDateDue ='', $scRenewal='N', $cancel='N') {
+        $msg = $this->_sip2->msgCheckout($itemID, $nbDateDue, $scRenewal, $itmProp, $fee, $noBlock, $cancel);
+        $info = $this->_sip2->parseCheckoutResponse($this->_sip2->get_message($msg));
+        return $info;
+    }
+
+    /**
+     * 2016-04: Checking item
+     * @param  string $item          value for the variable length required AB field
+     * @param  string $itmReturnDate value for the return date portion of the fixed length field
+     * @param  string $itmLocation   value for the variable length required AP field (default '')
+     * @param  string $itmProp       value for the variable length optional CH field (default '')
+     * @param  string $noBlock       value for the blocking portion of the fixed length field (default N)
+     * @param  string $cancel        value for the variable length optional BI field (default N)
+     * @return array                 SIP2 checkin response
+     */
+    public function itemCheckin($itemID, $itmReturnDate, $itmLocation = '', $itmProp = '', $noBlock='N', $cancel = '') {
+        $msg = $this->_sip2->msgCheckin($itemID, $itmReturnDate, $itmLocation = '', $itmProp = '', $noBlock='N', $cancel = '');
+        $info = $this->_sip2->parseCheckinResponse($this->_sip2->get_message($msg));
+        return $info;
+    }
+
+
+    /**
+     * 2016-04: Renew all loaned items
+     * @param  string $fee value for the optional variable length BO field
+     * @return string      SIP2 request message
+     * @return array                 SIP2 checkin response
+     */
+    public function itemRenewAll($fee = 'N') {
+        $msg = $this->_sip2->msgRenewAll($fee);
+        $info = $this->_sip2->parseRenewAllResponse($this->_sip2->get_message($msg));
+        return $info;
+    }
+
+
+    /**
+     * 2016-04: Renew single item  (changed order of parameters slightly)
+     * Generate Renew (code 29) request messages in sip2 format
+     * @param  string $item       value for the variable length optional AB field
+     * @param  string $title      value for the variable length optional AJ field
+     * @param  string $nbDateDue  value for the due date portion of the fixed length field
+     * @param  string $itmProp    value for the variable length optional CH field
+     * @param  string $fee        value for the variable length optional BO field
+     * @param  string $noBlock    value for the blocking portion of the fixed length field
+     * @param  string $thirdParty value for the party section of the fixed length field
+     * @return array                 SIP2 checkin response
+     */
+    public function itemRenew($itemID = '', $title = '', $itmProp = '', $fee= 'N', $noBlock = 'N', $nbDateDue = '', $thirdParty = 'N') {
+        $msg = $this->_sip2->msgRenew($itemID, $title, $nbDateDue, $itmProp, $fee, $noBlock, $thirdParty);
+        $info = $this->_sip2->parseRenewResponse($this->_sip2->get_message($msg));
+        return $info;
+    }
+
+
+    /**
+     * 2016-04: Item Status Update
+     * Generate Item Status (code 19) request messages in sip2 format
+     * @param  string $item     value for the variable length required AB field
+     * @param  string $itmProp  value for the variable length required CH field
+     * @return array                 SIP2 checkin response
+     */
+    public function itemStatusUpdate($itemId, $itmProp = '') {
+        $msg = $this->_sip2->msgItemStatus($itemId, $itmProp);
+        $info = $this->_sip2->parseItemStatusResponse($this->_sip2->get_message($msg));
+        return $info;
+    }
+
+
+   /**
+     * 2016-04: Pay fees
+     * @param  int    $feeType   value for the fee type portion of the fixed length field
+     * @param  int    $pmtType   value for payment type portion of the fixed length field
+     * @param  string $pmtAmount value for the payment amount variable length required BV field
+     * @param  string $curType   value for the currency type portion of the fixed field
+     * @param  string $feeId     value for the fee id variable length optional CG field
+     * @param  string $transId   value for the transaction id variable length optional BK field
+     * @return array             SIP2 payment response
+     */
+    public function feePay($feeType, $pmtType, $pmtAmount, $curType = 'USD', $feeId = '', $transId = '') {
+        $msg = $this->_sip2->msgFeePaid($feeType, $pmtType, $pmtAmount, $curType, $feeId, $transId);
+        $info = $this->_sip2->parseFeePaidResponse($this->_sip2->get_message($msg));
+        return $info;
+    }
+
+
+   /**
+     * 2016-04: Create, modify, or delete a hold.
+     * @param  string $mode         value for the mode portion of the fixed length field
+     * @param  string $expDate      value for the optional variable length BW field
+     * @param  string $holdtype     value for the optional variable length BY field
+     * @param  string $item         value for the optional variable length AB field
+     * @param  string $title        value for the optional variable length AJ field
+     * @param  string $fee          value for the optional variable length BO field
+     * @param  string $pkupLocation value for the optional variable length BS field
+     * @return array             SIP2 hold response
+     */
+    public function hold($mode, $expDate = '', $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '') {
+        $msg = $this->_sip2->msgHold($mode, $expDate, $holdtype, $item, $title, $fee, $pkupLocation);
+        $info = $this->_sip2->parseHoldResponse($this->_sip2->get_message($msg));
+        return $info;
+    }
+
+
+   /**
+     * 2016-04: Generate Block Patron (code 11) request messages in sip2 format
+     * Note: Even the protocol definition suggests, that this is pretty useless...
+     * @param  string $message   message value for the required variable length AL field
+     * @param  string $retained  value for the retained portion of the fixed length field (default N)
+     * @return array             There is no response, so it's just the message that is returned
+     */
+    public function patronBlock($message, $retained='N') {
+        $msg = $this->_sip2->msgBlockPatron($message, $retained);
+        $info = $this->_sip2->get_message($msg);
+        return $info;
+    }
+
+
+   /**
+     * 2016-04: Generate Patron Enable (code 25) request messages in sip2 format
+     * Note: Even the protocol definition suggests, that this is pretty useless...
+     * @return string SIP2 request message
+     * @return array             SIP2 enable response
+     */
+    public function patronEnable() {
+        $msg = $this->_sip2->msgPatronEnable();
+        $info = $this->_sip2->parsePatronEnableResponse($this->_sip2->get_message($msg));
+        return $info;
+    }
+
 
     /**
      * disconnect from the server
