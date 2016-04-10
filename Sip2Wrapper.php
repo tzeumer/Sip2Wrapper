@@ -354,9 +354,10 @@ class Sip2Wrapper {
             $this->_connected = true;
         }
         else {
-            throw new Exception('Connection failed');
+            // Check via debug output or $this->_sip2->log what went wrong
+            $this->_connected = false;
+            return false;
         }
-        return true;
     }
 
     /**

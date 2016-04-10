@@ -244,6 +244,24 @@ class Sip2
     );
 
     /**
+     * Socket: Error ID
+     * @var integer
+     */
+    public $socket_error_id;
+
+    /**
+     * Socket: Error message
+     * @var integer
+     */
+    public $socket_error_msg;
+
+    /**
+     * Socket protocol
+     * @var string
+     */
+    private $socket_protocol = 'tcp';
+
+    /**
      * raw socket connection
      * @var object
      */
@@ -1034,21 +1052,35 @@ class Sip2
         $terminator = '';
         $nr         = '';
 
-        $this->_debugmsg($this->version.": --- SENDING REQUEST --- '$message'");
-        fwrite($this->socket, $message, strlen($message));
+        /**
+         * @note A fallback solution. There seems to be no way
+         * to preserve a connection resource via a session in PHP. Without some php
+         * proxy/server concept we have to reconnect for each request. (You can
+         * still write a script with many commands in sucession without
+         * reconnection.
+         * 2016-03-26: Somewhere is mentioned that a connection is reused if
+         * stream_socket_client is not set to a variable seems to work, but harder to
+         * read
+         */
+         $context = ($this->socket_protocol == 'tcp') ? stream_context_create() : stream_context_create( ['ssl' => $this->socket_tls_options] );
+
+        $this->_debugmsg($this->version.": --- SENDING REQUEST --- \n$message\n");
+        fwrite((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port, $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)), $message, strlen($message));
+        echo $this->socket_error_msg;
 
         // Set timeout for socket, especially if there is no response with
-        // socket_recv due to malformed query. Since sending shoudl never be
+        // socket_recv due to malformed query. Since sending should never be
         // a problem after a sucessful connection, only receeiving might time
-        // out.
-        stream_set_timeout($this->socket, $this->socket_timeout);
-        $this->_debugmsg($this->version.": --- REQUEST SENT, WAITING FOR RESPONSE --- \n");
+        // out (the SIP2 standard explicitly makes timeout the only client side
+        // error detection method).
+        stream_set_timeout((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port, $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)), $this->socket_timeout);
+        $this->_debugmsg($this->version.": --- REQUEST SENT, WAITING FOR RESPONSE: --- \n");
 
         // \x0A is the escaped hexadecimal Line Feed. The equivalent of \n.
         // \x0D is the escaped hexadecimal Carriage Return. The equivalent of \r.
-        $result = stream_get_line($this->socket, 100000, "\x0D");
+        $result = stream_get_line((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port, $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)), 100000, "\x0D");
 
-        $this->_debugmsg($this->version.": --- RECEIVED RESPONSE --- '{$result}\n");
+        $this->_debugmsg($this->version.": --- RESPONSE RECEIVED  --- \n{$result}\n");
 
         /* test message for CRC validity */
         if ($this->_check_crc($result)) {
@@ -1084,22 +1116,22 @@ class Sip2
 
         // Set TLS options if encryption is enabled
         if ($this->socket_tls_enable == true) {
-            $protocol = 'tls';
+            $this->socket_protocol = 'tls';
             $context  = stream_context_create( ['ssl' => $this->socket_tls_options] );
         } else {
-            $protocol = 'tcp';
+            $this->socket_protocol = 'tcp';
             $context  = stream_context_create();
         }
 
         // Connect (with persistent connection (seems to work, yet not exactly sure)
-        $this->socket = stream_socket_client($protocol.'://'.$this->hostname.':'.$this->port, $errno, $errstr, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context);
+        $this->socket = stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port, $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context);
 
-        /* check for actual truly false result using === and return socket status*/
-        if ($this->socket === false) {
-            $result = $this->_debugmsg( $this->version." with TLS {$this->socket_tls_enable}: stream_socket_client() failed: reason: ($errno) $errstr \n");
+        /* Check of error code is given */
+        if ($this->socket_error_id > 0) {
+            $this->_debugmsg( 'ERROR '.$this->version." with TLS {$this->socket_tls_enable}: stream_socket_client() failed with error ($this->socket_error_id) $this->socket_error_msg");
             return false;
         } else {
-            $this->_debugmsg( $this->version.": --- SOCKET READY (with TLS {$this->socket_tls_enable}) --- (Socket created and connected)\n" );
+            $this->_debugmsg( $this->version.": --- SOCKET READY (Socket created and connected with TLS {$this->socket_tls_enable})\n" );
             return true;
         }
     }
@@ -1110,8 +1142,15 @@ class Sip2
      */
     function disconnect ()
     {
-        /*  Close the socket */
-        fclose($this->socket);
+        // @see comment in get_message()
+        // @todo The question is, if the sockets stay open otherwise
+        if (gettype($this->socket) !=  'resource') {
+            $context = ($this->socket_protocol == 'tcp') ? stream_context_create() : stream_context_create( ['ssl' => $this->socket_tls_options] );
+
+        fclose((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port, $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)));
+        } else {
+            fclose($this->socket);
+        }
     }
 
 
