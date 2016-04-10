@@ -149,6 +149,15 @@ class Sip2Wrapper {
         return $this->_sip2;
     }
 
+    /**
+     * Get the full result of the last request
+     * (The wrapper methods only return the essential data of the response)
+     * @return array
+     */
+    public function getSip2_parsedResult() {
+        return $this->_sip2->last_response_parsed;
+    }
+
 
     /**
      * @throws Exception if patron session hasn't began

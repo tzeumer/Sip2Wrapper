@@ -199,6 +199,26 @@ class Sip2
      */
     public $log             = '';
 
+    /**
+     * Last message sent to ACS
+     * @var string
+     */
+    public $last_request    = '';
+
+    /**
+     * Last response from ACS
+     * @var string
+     */
+    public $last_response   = '';
+
+    /**
+     * Last paresed response from ACS
+     * @var array
+     */
+    public $last_response_parsed = '';
+
+
+    /**
      * value for the AO field
      * @var string
      */
@@ -773,6 +793,8 @@ class Sip2
         );
 
         $result['variable'] = $this->_parsevariabledata($response, 37);
+
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -794,6 +816,8 @@ class Sip2
         );
 
         $result['variable'] = $this->_parsevariabledata($response, 24);
+
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -815,6 +839,8 @@ class Sip2
         );
 
         $result['variable'] = $this->_parsevariabledata($response, 24);
+
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -841,6 +867,8 @@ class Sip2
         );
 
         $result['variable'] = $this->_parsevariabledata($response, 36);
+
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -857,6 +885,8 @@ class Sip2
         'Ok'                => substr($response, 2, 1),
         );
         $result['variable'] = array();
+
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -882,6 +912,8 @@ class Sip2
         );
 
         $result['variable'] = $this->_parsevariabledata($response, 61);
+
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -901,6 +933,8 @@ class Sip2
         );
 
         $result['variable'] = $this->_parsevariabledata($response, 21);
+
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -919,6 +953,8 @@ class Sip2
         );
 
         $result['variable'] = $this->_parsevariabledata($response, 21);
+
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -940,6 +976,7 @@ class Sip2
 
         $result['variable'] = $this->_parsevariabledata($response, 26);
 
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -958,8 +995,9 @@ class Sip2
         );
 
         $result['variable'] = $this->_parsevariabledata($response, 21);
-        return $result;
 
+        $this->last_response_parsed = $result;
+        return $result;
     }
 
     /**
@@ -978,6 +1016,8 @@ class Sip2
         );
 
         $result['variable'] = $this->_parsevariabledata($response, 37);
+
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -998,6 +1038,8 @@ class Sip2
         );
 
         $result['variable'] = $this->_parsevariabledata($response, 40);
+
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -1020,6 +1062,8 @@ class Sip2
         );
 
         $result['variable'] = $this->_parsevariabledata($response, 24);
+
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -1040,6 +1084,8 @@ class Sip2
         );
 
         $result['variable'] = $this->_parsevariabledata($response, 29);
+
+        $this->last_response_parsed = $result;
         return $result;
     }
 
@@ -1106,6 +1152,11 @@ class Sip2
                 return false;
             }
         }
+
+        // Keep last message and response as property
+        $this->last_request  = $message;
+        $this->last_response = $result;
+
         return $result;
     }
 
