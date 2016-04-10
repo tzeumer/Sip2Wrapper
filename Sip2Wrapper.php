@@ -433,10 +433,10 @@ class Sip2Wrapper {
      * This method is required before any get/fetch methods that have Patron in the name.  Upon
      * successful login, it sets the inPatronSession property to true, otherwise false.
      * @param string $patronId Patron login ID
-     * @param string $patronPass Patron password
+     * @param string $patronPass Patron password; may be empty if ACS allows it
      * @return boolean returns true on successful login, false otherwise
      */
-    public function startPatronSession($patronId, $patronPass) {
+    public function startPatronSession($patronId, $patronPass = '') {
         if ($this->_inPatronSession) {
             $this->endPatronSession();
         }
