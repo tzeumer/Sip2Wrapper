@@ -50,7 +50,7 @@ class Gossip extends Sip2 {
      * Used protocol version (or extension)
      * @var string
      */
-    protected $version = 'Gossip';
+    public $version = 'Gossip';
 
     /**
      * Generate Patron Information (code 63) request messages in sip2 format

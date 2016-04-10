@@ -116,10 +116,10 @@ class Sip2
     public $port            = 6002;
 
     /**
-     * language code (001 == english)
+     * language code (000 = default, 001 == english)
      * @var string
      */
-    public $language        = '001';
+    public $language        = '000';
 
     /**
      * patron identifier (AA)
@@ -209,7 +209,7 @@ class Sip2
      * Socket: value until connection times out (no server response)
      * @var integer
      */
-    public $socket_timeout = 10;
+    public $socket_timeout = 5;
 
     /**
      * Socket: enable TLS (encrypted connection). Server has to support it.
@@ -277,7 +277,7 @@ class Sip2
      * Used protocol version (or extension)
      * @var string
      */
-    protected $version = 'Sip2';
+    public $version = 'Sip2';
 
     /**
      * Generate Patron Status (code 23) request messages in sip2 format
@@ -397,7 +397,7 @@ class Sip2
      * @return string|false SIP2 request message or false on error
      * @api
      */
-    function msgSCStatus($status = 0, $width = 80, $version = 2)
+    function msgSCStatus($status = 0, $width = '080', $version = '2.00')
     {
         /* selfcheck status message, this should be sent immediatly after login  - untested */
         /* status codes, from the spec:
@@ -407,7 +407,7 @@ class Sip2
         */
 
         if ($version > 3) {
-            $version = 2;
+            $version = '2.00';
         }
 
         if ($status < 0 || $status > 2) {
