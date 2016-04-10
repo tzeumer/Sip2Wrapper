@@ -292,6 +292,23 @@ class Sip2Wrapper {
     }
 
     /**
+     * 2016-04: Gossip only: return patron fees by type
+     * @return array fees by type
+     */
+    public function getPatronFeeItems() {
+        if ($this->_sip2->version !== 'Gossip') return false;
+
+        $info = $this->fetchPatronInfo('feeItems');
+        if (isset($info['variable']['FA'])) {
+            $feeItems = array('CG' => '',
+                              'FA' => '', 'FB' => '', 'FC' => '',
+                              'FD' => '', 'FE' => '', 'FF' => '');
+            return array_intersect_key($info['variable'], $feeItems);
+        }
+        return array();
+    }
+
+    /**
      * worker function to call out to sip2 server and grab patron information.
      * @param string $type One of 'none', 'hold', 'overdue', 'charged', 'fine', 'recall', or 'unavail'
      * @throws Exception if startPatronSession has not been called with success prior to calling this
