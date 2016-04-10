@@ -341,6 +341,9 @@ class Sip2Wrapper {
         if ($autoConnect) {
             $this->connect();
         }
+
+        // TEMP FOR TEST
+        $this->_sip2->log = 'New Wrapper Object Ready';
     }
 
     /**

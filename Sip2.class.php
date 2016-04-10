@@ -194,6 +194,11 @@ class Sip2
     public $debug           = false;
 
     /**
+     * Log of communication actions
+     * @var string
+     */
+    public $log             = '';
+
      * value for the AO field
      * @var string
      */
@@ -1265,6 +1270,8 @@ class Sip2
      */
     function _debugmsg($message)
     {
+        $this->log .= date('Y-m-d H:i:s').' '.$message;
+
         /* custom debug function,  why repeat the check for the debug flag in code... */
         if ($this->debug) {
             trigger_error( $message, E_USER_NOTICE);
