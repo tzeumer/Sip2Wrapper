@@ -146,7 +146,9 @@ FF       64, 38              Description of cost type of fee position
 FG       38                  Paid ammount for fee position
 ```
 
-Note: Sadly no official documentation for Gossip is available online. You can only contact the developer via https://www.gbv.de/Verbundzentrale/serviceangebote/gossip-service-der-vzg
+Notes: 
+* Sadly no official documentation for Gossip is available online. You can only contact the developer via https://www.gbv.de/Verbundzentrale/serviceangebote/gossip-service-der-vzg
+* As of 2019-07 Gossip 2.1 can provide the `borrower type` in field `FU` and the `borrower type description` in field `FV`. This functionality is enabled by default but may be disabled by setting. Also a field `FI` holds a message if patrons are required to return books before paying the overdue fees (like FIYou have to return the book before paying the fee). 
 
 
 # Todo
