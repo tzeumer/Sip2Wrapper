@@ -222,7 +222,7 @@ class Sip2
      * value for the AO field
      * @var string
      */
-    public $AO = 'WohlersSIP';
+    public $AO = 'TUHH';
 
     /**
      * value for the AN field
@@ -1116,7 +1116,7 @@ class Sip2
          $context = ($this->socket_protocol == 'tcp') ? stream_context_create() : stream_context_create( ['ssl' => $this->socket_tls_options] );
 
         $this->_debugmsg($this->version.": --- SENDING REQUEST --- \n$message\n");
-        fwrite((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port, $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)), $message, strlen($message));
+        fwrite((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port.'/uniqueString', $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)), $message, strlen($message));
         echo $this->socket_error_msg;
 
         // Set timeout for socket, especially if there is no response with
@@ -1124,12 +1124,12 @@ class Sip2
         // a problem after a sucessful connection, only receeiving might time
         // out (the SIP2 standard explicitly makes timeout the only client side
         // error detection method).
-        stream_set_timeout((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port, $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)), $this->socket_timeout);
+        stream_set_timeout((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port.'/uniqueString', $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)), $this->socket_timeout);
         $this->_debugmsg($this->version.": --- REQUEST SENT, WAITING FOR RESPONSE: --- \n");
 
         // \x0A is the escaped hexadecimal Line Feed. The equivalent of \n.
         // \x0D is the escaped hexadecimal Carriage Return. The equivalent of \r.
-        $result = stream_get_line((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port, $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)), 100000, "\x0D");
+        $result = stream_get_line((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port.'/uniqueString', $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)), 100000, "\x0D");
 
         $this->_debugmsg($this->version.": --- RESPONSE RECEIVED  --- \n{$result}\n");
 
@@ -1180,7 +1180,7 @@ class Sip2
         }
 
         // Connect (with persistent connection (seems to work, yet not exactly sure)
-        $this->socket = stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port, $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context);
+        $this->socket = stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port.'/uniqueString', $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context);
 
         /* Check of error code is given */
         if ($this->socket_error_id > 0) {
@@ -1203,7 +1203,7 @@ class Sip2
         if (gettype($this->socket) !=  'resource') {
             $context = ($this->socket_protocol == 'tcp') ? stream_context_create() : stream_context_create( ['ssl' => $this->socket_tls_options] );
 
-        fclose((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port, $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)));
+        fclose((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port.'/uniqueString', $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)));
         } else {
             fclose($this->socket);
         }
