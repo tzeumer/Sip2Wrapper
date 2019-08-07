@@ -313,19 +313,28 @@ class Sip2Wrapper {
      * @param string $type One of 'none', 'hold', 'overdue', 'charged', 'fine', 'recall', or 'unavail'
      * @throws Exception if startPatronSession has not been called with success prior to calling this
      * @return array the parsed response from the server
+	 * @todo The server should only be queried if data has changed. But this requires unsetting
+	 *		 $this->_patronInfo[$type] for each type in the corresponding messages (itemCheckin(), 
+	 *		 itemCheckout(), hold()...). For now we query the server every time...
      */
     public function fetchPatronInfo($type = 'none') {
         if (!$this->_inPatronSession) {
             throw new Exception('Must start patron session before calling fetchPatronInfo');
         }
+
+/*		// @todo: Reuse previous information
         if (is_array($this->_patronInfo) && isset($this->_patronInfo[$type])) {
             return $this->_patronInfo[$type];
         }
+*/
+
         $msg = $this->_sip2->msgPatronInformation($type);
         $info_response = $this->_sip2->parsePatronInfoResponse($this->_sip2->get_message($msg));
+
         if ($this->_patronInfo === NULL) {
             $this->_patronInfo = array();
         }
+		// @todo: Save information for quick reuse 
         $this->_patronInfo[$type] = $info_response;
         return $info_response;
     }
