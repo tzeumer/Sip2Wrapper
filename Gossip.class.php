@@ -1,4 +1,6 @@
 <?php
+namespace tzeumer\Sip2Wrapper;
+
 /**
  * @package
  * @author     Tobias Zeumer <github@verweisungsform.de>
