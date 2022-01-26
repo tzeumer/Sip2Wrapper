@@ -7,9 +7,11 @@ More about SIP2
 * Standard Interchange Protocol 2, Standard: http://mws9.3m.com/mws/mediawebserver.dyn?6666660Zjcf6lVs6EVs66S0LeCOrrrrQ-
 
 **Most recent changes**
+* 2022-01-26:
+	* Modified getPatronIsValid() to allow for missing CQ (valid Password) field. Reason: Gossip's ILL Deposit feature does not return CQ.
 * 2016-03-19:
-  * Added support for encrypted connections using TLS
-  * Added support for Gossip
+	* Added support for encrypted connections using TLS
+	* Added support for Gossip
 
 
 # Usage
@@ -31,7 +33,7 @@ $sip2 = new Sip2Wrapper(
 $sip2->login($user, $pass);
 
 if ($sip2->startPatronSession($patron, $patronpwd)) {
-    var_dump($sip2->patronScreenMessages);
+    var_dump($sip2->getPatronScreenMessages());
 }
 ```
 

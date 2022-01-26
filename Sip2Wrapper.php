@@ -45,7 +45,7 @@
  *
  *     // start a patron session and fetch patron status
  *     if ($sip2->startPatronSession($patron, $patronpwd)) {
- *       var_dump($sip2->patronScreenMessages);
+ *       var_dump($sip2->getPatronScreenMessages());
  *     }
  *
  *
@@ -177,11 +177,18 @@ class Sip2Wrapper {
 
     /**
      * parses patron status to determine if login was successful.
+     * 2022-01-26: Gossip now supports checkinf and paying Interlibrary loan
+     *             fees (ILL). This works without a password. Since CQ is 
+     *             really an optional field, add corresponding case.
      * @return boolean returns true if valid, false otherwise
      */
     public function getPatronIsValid() {
         $patronStatus = $this->getPatronStatus();
-        if (strcmp($patronStatus['variable']['BL'][0], 'Y') !== 0 || strcmp($patronStatus['variable']['CQ'][0], 'Y') !== 0) {
+        
+        if (!isset($patronStatus['variable']['CQ'][0])) {
+            return (strcmp($patronStatus['variable']['BL'][0], 'Y') !== 0) ? false : true;
+        }
+        elseif (strcmp($patronStatus['variable']['BL'][0], 'Y') !== 0 || strcmp($patronStatus['variable']['CQ'][0], 'Y') !== 0) {
             return false;
         }
         return true;
@@ -471,14 +478,20 @@ class Sip2Wrapper {
 
     /**
      * method to send a patron session to the server
+     * @param  string $force    Default: false. Set to true to just reset 
+     *                          current session without send Sip2 message 
+     *                          to server 
+     *                          (2022-01-26 added for Gossip ILL Deposit)
      * @throws Exception if patron session is not properly ended
      * @return Sip2Wrapper returns $this
      */
-    public function endPatronSession() {
-        $msg = $this->_sip2->msgEndPatronSession();
-        $end = $this->_sip2->parseEndSessionResponse($this->_sip2->get_message($msg));
-        if (strcmp($end['fixed']['EndSession'], 'Y') !== 0) {
-            throw new Exception('Error ending patron session');
+    public function endPatronSession($force = false) {
+        if (!$force) {
+            $msg = $this->_sip2->msgEndPatronSession();
+            $end = $this->_sip2->parseEndSessionResponse($this->_sip2->get_message($msg));
+            if (strcmp($end['fixed']['EndSession'], 'Y') !== 0) {
+                throw new Exception('Error ending patron session');
+            }
         }
         $this->_inPatronSession = false;
         $this->_patronStatus = NULL;
