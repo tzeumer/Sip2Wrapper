@@ -19,6 +19,6 @@
         "issues": "https://github.com/tzeumer/Sip2Wrapper/issues"
     },
     "require": {
-        "php": "^5.4.13 || ^7.0"
+        "php": ">=5.4.13"
     }
 }
