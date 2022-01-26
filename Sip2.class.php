@@ -1,5 +1,5 @@
 <?php
-namespace tzeumer\Sip2Wrapper;
+//namespace tzeumer\Sip2Wrapper;
 
 /**
  * @package
