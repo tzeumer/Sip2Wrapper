@@ -18,6 +18,11 @@
     "support": {
         "issues": "https://github.com/tzeumer/Sip2Wrapper/issues"
     },
+    "autoload": {
+        "psr-4": {
+            "tzeumer\\Sip2Wrapper\\": "/"
+        }
+    },    
     "require": {
         "php": ">=5.4.13"
     }
