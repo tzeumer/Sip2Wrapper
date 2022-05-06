@@ -1204,10 +1204,13 @@ class Sip2
         if (gettype($this->socket) !=  'resource') {
             $context = ($this->socket_protocol == 'tcp') ? stream_context_create() : stream_context_create( ['ssl' => $this->socket_tls_options] );
 
-        fclose((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port.'/uniqueString', $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)));
+            stream_socket_shutdown((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port.'/uniqueString', $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)), STREAM_SHUT_RDWR);
+            fclose((stream_socket_client($this->socket_protocol.'://'.$this->hostname.':'.$this->port.'/uniqueString', $this->socket_error_id, $this->socket_error_msg, $this->socket_timeout, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $context)));
         } else {
+            stream_socket_shutdown($this->socket, STREAM_SHUT_RDWR);
             fclose($this->socket);
         }
+    }
     }
 
 

@@ -7,6 +7,8 @@ More about SIP2
 * Standard Interchange Protocol 2, Standard: http://mws9.3m.com/mws/mediawebserver.dyn?6666660Zjcf6lVs6EVs66S0LeCOrrrrQ-
 
 **Most recent changes**
+* 2022-05-06:
+	* Added stream_socket_shutdown() to Sip2->disconnect(), because otherwise Gossip got stuck with a permanent high CPU usage under RHEL7.
 * 2022-01-26:
 	* Modified getPatronIsValid() to allow for missing CQ (valid Password) field. Reason: Gossip's ILL Deposit feature does not return CQ.
 * 2016-03-19:
