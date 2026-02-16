@@ -1211,7 +1211,6 @@ class Sip2
             fclose($this->socket);
         }
     }
-    }
 
 
     /* internal utillity functions */
