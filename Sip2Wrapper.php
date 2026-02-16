@@ -1,6 +1,8 @@
 <?php
 namespace tzeumer\Sip2Wrapper;
 
+use Exception;
+
 /**
  * @author nathan@nathanjohnson.info
  */
